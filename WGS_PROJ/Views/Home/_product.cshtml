@@ -1,0 +1,21 @@
+@model List<WGS_PROJ.Models.MsProduct>
+<table id="tblLookUp" class="table table-bordered">
+  <thead>
+    <tr>
+      <th>item</th>
+      <th>price</th>
+      <th>weight</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var p in Model)
+    {
+<tr>
+  <td>@p.ProductDesc</td>
+  <td>@p.ProductPrice</td>
+  <td>@p.ProductWeight</td>
+  <td><input type="button" class="btn btn-primary btn-select" value="Select Item" ></td>
+</tr>}
+  </tbody>
+</table>

@@ -1,7 +1,79 @@
 @model WGS_PROJ.Models.TrInvoice
-@{
-  ViewData["Title"] = "";
-}
+@{ ViewData["Title"] = ""; }
+
+<script type="text/javascript">
+  var tableLookup;
+  var totalQTY = 0;
+  var courier_fee = 0;
+  $(document).ready(function () {
+    $("#InvoiceDate").datepicker();
+    $("#modalItem .modal-body").load("/home/product");
+
+    tableLookup = $("#tableLookup").DataTable({
+      "columnDefs": [
+        {
+          "targets": [0],
+          "visible": false,
+          "searchable": false
+        }
+      ]
+    });
+
+    $('#tableLookup tbody').on('click', 'tr', function () {
+      debugger;
+      var data = tableLookup.row(this).data();
+      addRow(data);
+    });
+
+
+  });
+
+  function addItem() {
+    $("#modalLookUp").modal('show');
+  }
+
+  function addRow(data) {
+    var table = $("#tableItem");
+
+    var idx = [];
+    $(table).children("tbody").find("input[name*='TrInvoiceDetail']").each(function (i, e) {
+      var x = e.name.replace(/[^0-9]/g, '');
+      idx.push(x);
+    });
+
+    var rowCount = 0;// $('#_Table tr').length - 1;
+    if (idx.length > 0) {
+      rowCount = Math.max.apply(Math, idx) + 1;
+    }
+    var content = "<tr><td> <input type='hidden' name='TrInvoiceDetail.Index' value='" + rowCount + "' /><input type='hidden' class='form-control' name='TrInvoiceDetail[" + rowCount + "].ProductId' readonly value=" + data[0] + " />" + data[1] + "</td><td>" + data[3] + "</td><td><input type='number' onkeyup='pricePerItem(this);' class='form-control qty' name='TrInvoiceDetail[" + rowCount + "].Qty' value='1' /></td><td><input type='text' class='form-control price' name='price' readonly value=" + data[2] + " /></td><td><input type='number' class='form-control totalprice' name='TrInvoiceDetail[" + rowCount + "].TotalPrice' readonly /></td></tr>";
+    $(table).children("tbody").append(content);
+    $("#modalLookUp").modal('hide');
+  }
+
+  function pricePerItem(e) {
+    var $tr = $(e).closest('tr');
+    $qty = $tr.find('input.qty');
+    $price = $tr.find('input.price');
+    $totalprice = $tr.find('input.totalprice');
+
+    $totalprice.val($qty.val() * $price.val());
+
+    var grandtotal = 0;
+
+    $("#tableItem").find("input.totalprice").each(function () {
+      if (!isNaN($(this).val())) {
+        grandtotal += parseInt($(this).val());
+      }
+    });
+
+    if (isNaN(grandtotal))
+      grandtotal = 0;
+
+    $("input.grandTotal").val(grandtotal);
+
+  }
+
+</script>
 
 <div class="container">
   <form method="post">
@@ -63,10 +135,10 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <input type="button" class="btn btn-primary" onclick="alert('aaaa');" value="Add Item">          
+          <input type="button" class="btn btn-primary" onclick="addItem();" value="Add Item">
         </div>
         <div class="col-sm-12">
-          <table class="table table-bordered">
+          <table class="table table-bordered" id="tableItem">
             <thead>
               <tr>
                 <th>Item</th>
@@ -81,7 +153,7 @@
               <tr>
                 <td colspan="3"></td>
                 <td>Sub Total</td>
-                <td></td>
+                <td><input type="number"  disabled class="form-control grandTotal"></td>
               </tr>
               <tr>
                 <td colspan="3"></td>
@@ -91,10 +163,57 @@
             </tfoot>
           </table>
         </div>
-      </div>    
+      </div>
     </div>
     <div class="container">
       <button type="submit" class="btn btn-primary">Save</button>
     </div>
   </form>
+</div>
+
+<div class="modal fade" id="modalLookUp" tabindex="-1" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="modalLookUpTitle"></h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <input type="hidden" name="LookUpType" id="LookUpType" />
+          <div class="col-lg-12">
+            <table class="table table-bordered table-hover" id="tableLookup" style=" white-space:nowrap;width:100%">
+              <thead>
+                <tr>
+                  <th>
+                    production id
+                  </th>
+                  <th>
+                    item
+                  </th>
+                  <th>
+                    Price
+                  </th>
+                  <th>
+                    Weight
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (var p in ViewBag.product as List<MsProduct>)
+                {
+          <tr>
+            <td>@p.ProductId</td>
+            <td>@p.ProductDesc</td>
+            <td>@p.ProductPrice</td>
+            <td>@p.ProductWeight</td>
+          </tr>
+}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

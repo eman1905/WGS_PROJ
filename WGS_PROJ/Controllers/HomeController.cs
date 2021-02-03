@@ -47,15 +47,22 @@ namespace WGS_PROJ.Controllers
       
       ViewBag.sales = new SelectList(dbContext.MsSales, "SalesId", "SalesName");
       ViewBag.courier = new SelectList(dbContext.MsCourier, "CourierId", "CourierName");
-
+      ViewBag.product = dbContext.MsProduct.ToList();
 
       return View(invoice);
+    }
+
+    public IActionResult Product() {
+      var model = dbContext.MsProduct.ToList();
+      return PartialView("_product", model);
     }
 
     [HttpPost]
     public IActionResult Invoice(TrInvoice model)
     {
-
+      ViewBag.sales = new SelectList(dbContext.MsSales, "SalesId", "SalesName");
+      ViewBag.courier = new SelectList(dbContext.MsCourier, "CourierId", "CourierName");
+      ViewBag.product = dbContext.MsProduct.ToList();
       return View();
     }
   }
