@@ -18,8 +18,7 @@
       ]
     });
 
-    $('#tableLookup tbody').on('click', 'tr', function () {
-      debugger;
+    $('#tableLookup tbody').on('click', 'tr', function () {      
       var data = tableLookup.row(this).data();
       addRow(data);
     });
@@ -34,6 +33,7 @@
         success: function (response) {          
           courier_fee = response.result.courierFee;
           courierFee();
+          grandTotal();
         },
         error: function (event, textStatus, errorThrown) {
           alert("failed to get courier info");
@@ -41,6 +41,9 @@
       });
     });
 
+    $("#CourierId").trigger("change");
+    grandTotal();
+    courierFee();
   });
 
   function addItem() {
@@ -122,33 +125,34 @@
     <div class="container">
       <fieldset>
         <legend>Invoice Detail</legend>
+        <input type="hidden" asp-for="InvoiceId">
         <div class="row">
           <div class="col-md-6">
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">Invoice Date</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" asp-for="InvoiceDate">
+                <input type="text" class="form-control" required asp-for="InvoiceDate">
               </div>
             </div>
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">To</label>
               <div class="col-sm-9">
-                <textarea class="form-control" asp-for="InvoiceTo"></textarea>
+                <textarea class="form-control" required asp-for="InvoiceTo"></textarea>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">Sales Name</label>
               <div class="col-sm-9">
-                <select class="form-control" asp-for="SalesId" asp-items="@(ViewBag.sales)">
-                  <option>Select Sales</option>
+                <select class="form-control" asp-for="SalesId" required asp-items="@(ViewBag.sales)">
+                  <option></option>
                 </select>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">Courier</label>
               <div class="col-sm-9">
-                <select class="form-control" asp-for="CourierId" asp-items="@(ViewBag.courier)">
-                  <option>Select Courier</option>
+                <select class="form-control" asp-for="CourierId" required asp-items="@(ViewBag.courier)">
+                  <option></option>
                 </select>
               </div>
             </div>
@@ -157,13 +161,13 @@
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">Ship To</label>
               <div class="col-sm-9">
-                <textarea class="form-control" asp-for="InvoiceShipTo"></textarea>
+                <textarea class="form-control" required asp-for="InvoiceShipTo"></textarea>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">Payment Type</label>
               <div class="col-sm-9">
-                <select class="form-control" asp-for="PaymentType">
+                <select class="form-control" required asp-for="PaymentType">
                   <option></option>
                   <option value="COD">COD</option>
                   <option value="CASH">CASH</option>
@@ -190,7 +194,28 @@
                 <th>Total</th>
               </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+              @if (Model!=null) {
+                int i = 0;
+                foreach (var p in Model.TrInvoiceDetail) {
+              <tr>
+                <td>
+                  <input type="hidden" name="TrInvoiceDetail.Index" value="@i">
+                  <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].InvoiceId" readonly value="@p.InvoiceId">
+                  <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].InvoiceDetailId" readonly value="@p.InvoiceDetailId">
+                  <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].ProductId" readonly value="@p.ProductId">
+                  <input type="hidden" class="form-control weight" value="@p.Product.ProductWeight">
+                  @p.Product.ProductDesc
+                </td>
+                <td><input type="number" class="form-control totalWeight" name="TrInvoiceDetail[@i].TotalWeight" readonly value="@p.TotalWeight"></td>
+                <td><input type="number" onkeyup="pricePerItem(this);" onchange="pricePerItem(this);" class="form-control qty" name="TrInvoiceDetail[@i].Qty" value="@p.Qty"></td>
+                <td><input type="text" class="form-control price" name="price" readonly="" value="@p.Product.ProductPrice"></td>
+                <td><input type="number" class="form-control totalprice" name="TrInvoiceDetail[@i].TotalPrice" readonly="" value="@p.TotalPrice"></td>
+              </tr>
+                  i++;
+                }
+              }
+            </tbody>
             <tfoot>
               <tr>
                 <td colspan="3"></td>

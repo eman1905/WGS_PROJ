@@ -44,7 +44,7 @@ namespace WGS_PROJ.Controllers
       //if (invoice == null) {
       //  return NotFound();
       //}
-      
+
       ViewBag.sales = new SelectList(dbContext.MsSales, "SalesId", "SalesName");
       ViewBag.courier = new SelectList(dbContext.MsCourier, "CourierId", "CourierName");
       ViewBag.product = dbContext.MsProduct.ToList();
@@ -52,7 +52,8 @@ namespace WGS_PROJ.Controllers
       return View(invoice);
     }
 
-    public IActionResult Product() {
+    public IActionResult Product()
+    {
       var model = dbContext.MsProduct.ToList();
       return PartialView("_product", model);
     }
@@ -60,17 +61,86 @@ namespace WGS_PROJ.Controllers
     [HttpPost]
     public IActionResult Invoice(TrInvoice model)
     {
+      using (var transcation = dbContext.Database.BeginTransaction())
+      {
+        if (model.InvoiceId == 0)
+        {
+          //input baru
+          dbContext.TrInvoice.Add(model);
+
+          try
+          {
+            dbContext.SaveChanges();
+            transcation.Commit();
+          }
+          catch (Exception e)
+          {
+            transcation.Rollback();
+            throw e;
+          }
+
+        }
+        else
+        {
+          TrInvoice old = dbContext.TrInvoice.Find(model.InvoiceId);
+
+          //hapus jika tidak ada
+          foreach (var existingChild in old.TrInvoiceDetail.ToList())
+          {
+            if (!model.TrInvoiceDetail.Any(c => c.InvoiceDetailId == existingChild.InvoiceDetailId))
+              dbContext.TrInvoiceDetail.Remove(existingChild);
+          }
+
+          //jika ada item baru
+          foreach (var p in model.TrInvoiceDetail)
+          {
+            var existingChild = old.TrInvoiceDetail
+        .Where(c => c.InvoiceDetailId == p.InvoiceDetailId)
+        .SingleOrDefault();
+
+            if (existingChild != null)
+              // Update child
+              dbContext.Entry(existingChild).CurrentValues.SetValues(p);
+            else
+            {
+              p.InvoiceId = model.InvoiceId;
+              old.TrInvoiceDetail.Add(p);
+            }
+          }
+
+          old.InvoiceShipTo = model.InvoiceShipTo;
+          old.InvoiceTo = model.InvoiceTo;
+          old.InvoiceDate = model.InvoiceDate;
+          old.PaymentType = model.PaymentType;
+          old.SalesId = model.SalesId;
+          old.CourierId = old.CourierId;
+          try
+          {
+            dbContext.SaveChanges();
+            transcation.Commit();
+          }
+          catch (Exception e)
+          {
+            transcation.Rollback();
+            throw e;
+          }
+        }
+      }
+
+
       ViewBag.sales = new SelectList(dbContext.MsSales, "SalesId", "SalesName");
       ViewBag.courier = new SelectList(dbContext.MsCourier, "CourierId", "CourierName");
       ViewBag.product = dbContext.MsProduct.ToList();
-      return View();
+      return RedirectToAction("Invoice", new { id = model.InvoiceId });
     }
 
     [HttpGet]
-    public IActionResult getCourier(int id) {
+    public IActionResult getCourier(int id)
+    {
       var courier = dbContext.MsCourier.FindAsync(id);
 
-      if (courier == null) {
+      if (courier == null)
+      {
         return NotFound();
       }
 

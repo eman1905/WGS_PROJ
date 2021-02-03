@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
@@ -29,7 +29,7 @@ namespace WGS_PROJ.Models
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+            optionsBuilder.UseLazyLoadingProxies().UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
                 opts => opts.CommandTimeout((int)TimeSpan.FromMinutes(2).TotalSeconds));
         }
 
