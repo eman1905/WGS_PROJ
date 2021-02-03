@@ -18,19 +18,19 @@
       ]
     });
 
-    $('#tableLookup tbody').on('click', 'tr', function () {      
+    $('#tableLookup tbody').on('click', 'tr', function () {
       var data = tableLookup.row(this).data();
       addRow(data);
     });
 
-    $("#CourierId").on("change", function () {      
+    $("#CourierId").on("change", function () {
       $.ajax({
         type: "GET",
-        url: "/home/getCourier/"+ this.value,
+        url: "/home/getCourier/" + this.value,
         //data: id,
         //dataType: "json",
         //contentType: "application/json",
-        success: function (response) {          
+        success: function (response) {
           courier_fee = response.result.courierFee;
           courierFee();
           grandTotal();
@@ -63,7 +63,7 @@
     if (idx.length > 0) {
       rowCount = Math.max.apply(Math, idx) + 1;
     }
-    var content = "<tr><td> <input type='hidden' name='TrInvoiceDetail.Index' value='" + rowCount + "' /><input type='hidden' class='form-control' name='TrInvoiceDetail[" + rowCount + "].ProductId' readonly value=" + data[0] + " /><input type='hidden' class='form-control weight' value=" + data[3] + " />" + data[1] + "</td><td><input type='number' class='form-control totalWeight' name='TrInvoiceDetail[" + rowCount + "].TotalWeight' readonly value=" + data[3] +" /></td><td><input type='number' onkeyup='pricePerItem(this);' onchange='pricePerItem(this);' class='form-control qty' name='TrInvoiceDetail[" + rowCount + "].Qty' value='1' /></td><td><input type='text' class='form-control price' name='price' readonly value=" + data[2] + " /></td><td><input type='number' class='form-control totalprice' name='TrInvoiceDetail[" + rowCount + "].TotalPrice' readonly value="+data[2]+" /></td></tr>";
+    var content = "<tr><td> <input type='hidden' name='TrInvoiceDetail.Index' value='" + rowCount + "' /><input type='hidden' class='form-control' name='TrInvoiceDetail[" + rowCount + "].ProductId' readonly value=" + data[0] + " /><input type='hidden' class='form-control weight' value=" + data[3] + " />" + data[1] + "</td><td><input type='number' class='form-control totalWeight' name='TrInvoiceDetail[" + rowCount + "].TotalWeight' readonly value=" + data[3] + " /></td><td><input type='number' onkeyup='pricePerItem(this);' onchange='pricePerItem(this);' class='form-control qty' name='TrInvoiceDetail[" + rowCount + "].Qty' value='1' /></td><td><input type='text' class='form-control price' name='price' readonly value=" + data[2] + " /></td><td><input type='number' class='form-control totalprice' name='TrInvoiceDetail[" + rowCount + "].TotalPrice' readonly value=" + data[2] + " /></td></tr>";
     $(table).children("tbody").append(content);
     grandTotal();
     courierFee();
@@ -99,10 +99,10 @@
       grandtotal = 0;
 
     $("input.grandTotal").val(grandtotal);
-    $("input.Total").val( parseFloat($("input.courierFee").val()) + parseFloat($("input.grandTotal").val()));
+    $("input.Total").val(parseFloat($("input.courierFee").val()) + parseFloat($("input.grandTotal").val()));
   }
 
-  function courierFee() {    
+  function courierFee() {
     var totalWeight = 0;
 
     $("#tableItem").find("input.totalWeight").each(function () {
@@ -118,8 +118,25 @@
     $("input.Total").val(parseFloat($("input.courierFee").val()) + parseFloat($("input.grandTotal").val()));
   }
 
-</script>
+  function viewInvoice() {
+    window.location = "/home/invoice/" + $("#InvoiceId").val();
+  }
 
+</script>
+<div class="container">
+  <div class="container">
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">No Invoice</label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" required asp-for="InvoiceId">
+      </div>
+      <div class="col-sm-3">
+        <input type="button" class="btn btn-primary" onclick="viewInvoice();" value="View">
+      </div>
+    </div>
+  </div>
+
+</div>
 <div class="container">
   <form method="post">
     <div class="container">
@@ -195,26 +212,28 @@
               </tr>
             </thead>
             <tbody>
-              @if (Model!=null) {
+              @if (Model != null)
+              {
                 int i = 0;
-                foreach (var p in Model.TrInvoiceDetail) {
-              <tr>
-                <td>
-                  <input type="hidden" name="TrInvoiceDetail.Index" value="@i">
-                  <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].InvoiceId" readonly value="@p.InvoiceId">
-                  <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].InvoiceDetailId" readonly value="@p.InvoiceDetailId">
-                  <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].ProductId" readonly value="@p.ProductId">
-                  <input type="hidden" class="form-control weight" value="@p.Product.ProductWeight">
-                  @p.Product.ProductDesc
-                </td>
-                <td><input type="number" class="form-control totalWeight" name="TrInvoiceDetail[@i].TotalWeight" readonly value="@p.TotalWeight"></td>
-                <td><input type="number" onkeyup="pricePerItem(this);" onchange="pricePerItem(this);" class="form-control qty" name="TrInvoiceDetail[@i].Qty" value="@p.Qty"></td>
-                <td><input type="text" class="form-control price" name="price" readonly="" value="@p.Product.ProductPrice"></td>
-                <td><input type="number" class="form-control totalprice" name="TrInvoiceDetail[@i].TotalPrice" readonly="" value="@p.TotalPrice"></td>
-              </tr>
-                  i++;
-                }
-              }
+                foreach (var p in Model.TrInvoiceDetail)
+                {
+        <tr>
+          <td>
+            <input type="hidden" name="TrInvoiceDetail.Index" value="@i">
+            <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].InvoiceId" readonly value="@p.InvoiceId">
+            <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].InvoiceDetailId" readonly value="@p.InvoiceDetailId">
+            <input type="hidden" class="form-control" name="TrInvoiceDetail[@i].ProductId" readonly value="@p.ProductId">
+            <input type="hidden" class="form-control weight" value="@p.Product.ProductWeight">
+            @p.Product.ProductDesc
+          </td>
+          <td><input type="number" class="form-control totalWeight" name="TrInvoiceDetail[@i].TotalWeight" readonly value="@p.TotalWeight"></td>
+          <td><input type="number" onkeyup="pricePerItem(this);" onchange="pricePerItem(this);" class="form-control qty" name="TrInvoiceDetail[@i].Qty" value="@p.Qty"></td>
+          <td><input type="text" class="form-control price" name="price" readonly="" value="@p.Product.ProductPrice"></td>
+          <td><input type="number" class="form-control totalprice" name="TrInvoiceDetail[@i].TotalPrice" readonly="" value="@p.TotalPrice"></td>
+        </tr>
+i++;
+      }
+    }
             </tbody>
             <tfoot>
               <tr>
