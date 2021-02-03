@@ -1,0 +1,100 @@
+@model WGS_PROJ.Models.TrInvoice
+@{
+  ViewData["Title"] = "";
+}
+
+<div class="container">
+  <form method="post">
+    <div class="container">
+      <fieldset>
+        <legend>Invoice Detail</legend>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Invoice Date</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control" asp-for="InvoiceDate">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">To</label>
+              <div class="col-sm-9">
+                <textarea class="form-control" asp-for="InvoiceTo"></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Sales Name</label>
+              <div class="col-sm-9">
+                <select class="form-control" asp-for="SalesId" asp-items="@(ViewBag.sales)">
+                  <option>Select Sales</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Courier</label>
+              <div class="col-sm-9">
+                <select class="form-control" asp-for="CourierId" asp-items="@(ViewBag.courier)">
+                  <option>Select Courier</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Ship To</label>
+              <div class="col-sm-9">
+                <textarea class="form-control" asp-for="InvoiceShipTo"></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Payment Type</label>
+              <div class="col-sm-9">
+                <select class="form-control" asp-for="PaymentType">
+                  <option></option>
+                  <option value="COD">COD</option>
+                  <option value="CASH">CASH</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <input type="button" class="btn btn-primary" onclick="alert('aaaa');" value="Add Item">          
+        </div>
+        <div class="col-sm-12">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Weight(kg)</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3"></td>
+                <td>Sub Total</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td colspan="3"></td>
+                <td>Courier Fee</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>    
+    </div>
+    <div class="container">
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
