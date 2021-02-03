@@ -7,7 +7,6 @@
   var courier_fee = 0;
   $(document).ready(function () {
     $("#InvoiceDate").datepicker();
-    $("#modalItem .modal-body").load("/home/product");
 
     tableLookup = $("#tableLookup").DataTable({
       "columnDefs": [
@@ -25,6 +24,22 @@
       addRow(data);
     });
 
+    $("#CourierId").on("change", function () {      
+      $.ajax({
+        type: "GET",
+        url: "/home/getCourier/"+ this.value,
+        //data: id,
+        //dataType: "json",
+        //contentType: "application/json",
+        success: function (response) {          
+          courier_fee = response.result.courierFee;
+          courierFee();
+        },
+        error: function (event, textStatus, errorThrown) {
+          alert("failed to get courier info");
+        }
+      });
+    });
 
   });
 
@@ -45,19 +60,30 @@
     if (idx.length > 0) {
       rowCount = Math.max.apply(Math, idx) + 1;
     }
-    var content = "<tr><td> <input type='hidden' name='TrInvoiceDetail.Index' value='" + rowCount + "' /><input type='hidden' class='form-control' name='TrInvoiceDetail[" + rowCount + "].ProductId' readonly value=" + data[0] + " />" + data[1] + "</td><td>" + data[3] + "</td><td><input type='number' onkeyup='pricePerItem(this);' class='form-control qty' name='TrInvoiceDetail[" + rowCount + "].Qty' value='1' /></td><td><input type='text' class='form-control price' name='price' readonly value=" + data[2] + " /></td><td><input type='number' class='form-control totalprice' name='TrInvoiceDetail[" + rowCount + "].TotalPrice' readonly /></td></tr>";
+    var content = "<tr><td> <input type='hidden' name='TrInvoiceDetail.Index' value='" + rowCount + "' /><input type='hidden' class='form-control' name='TrInvoiceDetail[" + rowCount + "].ProductId' readonly value=" + data[0] + " /><input type='hidden' class='form-control weight' value=" + data[3] + " />" + data[1] + "</td><td><input type='number' class='form-control totalWeight' name='TrInvoiceDetail[" + rowCount + "].TotalWeight' readonly value=" + data[3] +" /></td><td><input type='number' onkeyup='pricePerItem(this);' onchange='pricePerItem(this);' class='form-control qty' name='TrInvoiceDetail[" + rowCount + "].Qty' value='1' /></td><td><input type='text' class='form-control price' name='price' readonly value=" + data[2] + " /></td><td><input type='number' class='form-control totalprice' name='TrInvoiceDetail[" + rowCount + "].TotalPrice' readonly value="+data[2]+" /></td></tr>";
     $(table).children("tbody").append(content);
+    grandTotal();
+    courierFee();
     $("#modalLookUp").modal('hide');
   }
 
   function pricePerItem(e) {
     var $tr = $(e).closest('tr');
     $qty = $tr.find('input.qty');
+    $weight = $tr.find('input.weight');
     $price = $tr.find('input.price');
     $totalprice = $tr.find('input.totalprice');
+    $totalWeight = $tr.find('input.totalWeight');
 
     $totalprice.val($qty.val() * $price.val());
+    $totalWeight.val($qty.val() * $weight.val());
 
+    grandTotal();
+    courierFee();
+
+  }
+
+  function grandTotal() {
     var grandtotal = 0;
 
     $("#tableItem").find("input.totalprice").each(function () {
@@ -70,7 +96,23 @@
       grandtotal = 0;
 
     $("input.grandTotal").val(grandtotal);
+    $("input.Total").val( parseFloat($("input.courierFee").val()) + parseFloat($("input.grandTotal").val()));
+  }
 
+  function courierFee() {    
+    var totalWeight = 0;
+
+    $("#tableItem").find("input.totalWeight").each(function () {
+      if (!isNaN($(this).val())) {
+        totalWeight += parseInt($(this).val());
+      }
+    });
+
+    if (isNaN(totalWeight))
+      totalQty = 0;
+
+    $("input.courierFee").val(totalWeight * courier_fee);
+    $("input.Total").val(parseFloat($("input.courierFee").val()) + parseFloat($("input.grandTotal").val()));
   }
 
 </script>
@@ -153,12 +195,17 @@
               <tr>
                 <td colspan="3"></td>
                 <td>Sub Total</td>
-                <td><input type="number"  disabled class="form-control grandTotal"></td>
+                <td><input type="number" disabled class="form-control grandTotal"></td>
               </tr>
               <tr>
                 <td colspan="3"></td>
                 <td>Courier Fee</td>
-                <td></td>
+                <td><input type="number" disabled class="form-control courierFee"></td>
+              </tr>
+              <tr>
+                <td colspan="3"></td>
+                <td>Grand Total</td>
+                <td><input type="number" disabled class="form-control Total"></td>
               </tr>
             </tfoot>
           </table>

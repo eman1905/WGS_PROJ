@@ -65,5 +65,16 @@ namespace WGS_PROJ.Controllers
       ViewBag.product = dbContext.MsProduct.ToList();
       return View();
     }
+
+    [HttpGet]
+    public IActionResult getCourier(int id) {
+      var courier = dbContext.MsCourier.FindAsync(id);
+
+      if (courier == null) {
+        return NotFound();
+      }
+
+      return Ok(courier);
+    }
   }
 }
